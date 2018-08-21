@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import linear_model
+from sklearn import linear_model, neighbors
 
 
 def prepare_country_stats(oecd_bli, gdp_per_capita):
@@ -31,6 +31,11 @@ plt.show()
 
 lin_reg_model = linear_model.LinearRegression()
 lin_reg_model.fit(X, Y)
-
 X_new = [[22587]]
 print(lin_reg_model.predict(X_new))
+
+
+clr = neighbors.KNeighborsRegressor(n_neighbors=3)
+clr.fit(X, Y)
+X_new = [[22587]]
+print(clr.predict(X_new))
