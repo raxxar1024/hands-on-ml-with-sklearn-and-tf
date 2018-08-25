@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
+from pandas.plotting import scatter_matrix
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -63,13 +64,24 @@ if __name__ == "__main__":
         # plt.legend()
         # plt.show()
 
-        from pandas.plotting import scatter_matrix
+        # 查找关联
+        # corr_matrix = housing.corr()
+        # print(corr_matrix["median_house_value"].sort_values(ascending=False))
 
-        attributes = ["median_house_value", "median_income", "total_rooms",
-                      "housing_median_age"]
-        scatter_matrix(housing[attributes], figsize=(12, 8))
-        plt.show()
+        # 每个数值属性对每个其它数值属性的图
+        # attributes = ["median_house_value", "median_income", "total_rooms",
+        #               "housing_median_age"]
+        # scatter_matrix(housing[attributes], figsize=(12, 8))
+        # plt.show()
 
-        housing.plot(kind="scatter", x="median_income", y="median_house_value",
-                     alpha=0.1)
-        plt.show()
+        # 最有希望用来预测房价中位数的属性是收入中位数
+        # housing.plot(kind="scatter", x="median_income", y="median_house_value",
+        #              alpha=0.1)
+        # plt.show()
+
+        # 创建属性
+        housing["rooms_per_household"] = housing["total_rooms"]/housing["households"]
+        housing["bedrooms_per_room"] = housing["total_bedrooms"]/housing["total_rooms"]
+        housing["population_per_household"] = housing["population"]/housing["households"]
+        corr_matrix = housing.corr()
+        print(corr_matrix["median_house_value"].sort_values(ascending=False))
