@@ -52,7 +52,7 @@ if __name__ == "__main__":
         # for set in (strat_train_set, strat_test_set):
         #     set.drop(["income_cat"], axis=1, inplace=True)
         #
-        housing = strat_train_set.copy()
+        # housing = strat_train_set.copy()
 
         # housing.plot(kind="scatter", x="longitude", y="latitude")
         # housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.1)
@@ -80,8 +80,12 @@ if __name__ == "__main__":
         # plt.show()
 
         # 创建属性
-        housing["rooms_per_household"] = housing["total_rooms"]/housing["households"]
-        housing["bedrooms_per_room"] = housing["total_bedrooms"]/housing["total_rooms"]
-        housing["population_per_household"] = housing["population"]/housing["households"]
-        corr_matrix = housing.corr()
-        print(corr_matrix["median_house_value"].sort_values(ascending=False))
+        # housing["rooms_per_household"] = housing["total_rooms"]/housing["households"]
+        # housing["bedrooms_per_room"] = housing["total_bedrooms"]/housing["total_rooms"]
+        # housing["population_per_household"] = housing["population"]/housing["households"]
+        # corr_matrix = housing.corr()
+        # print(corr_matrix["median_house_value"].sort_values(ascending=False))
+
+        # 为机器学习算法准备数据
+        housing = strat_train_set.drop("median_house_value", axis=1)
+        housing_labels = strat_train_set["median_house_value"].copy()
