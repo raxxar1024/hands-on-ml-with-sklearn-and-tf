@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
 from pandas.plotting import scatter_matrix
+from sklearn.preprocessing import Imputer, LabelEncoder
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -89,3 +90,20 @@ if __name__ == "__main__":
         # 为机器学习算法准备数据
         housing = strat_train_set.drop("median_house_value", axis=1)
         housing_labels = strat_train_set["median_house_value"].copy()
+
+        # 数据清洗
+        # imputer = Imputer(strategy="median")
+        # housing_num = housing.drop("ocean_proximity", axis=1)
+        # imputer.fit(housing_num)
+        # print(imputer.statistics_)
+        # print(housing_num.median().values)
+        # X = imputer.transform(housing_num) # 用中位数替换空数据，结果为普通Numpy数组
+        # housing_tr = pd.DataFrame(X, columns=housing_num.columns) # 转成Pandas DataFrame
+
+        # 处理文本和类别属性
+        encoder = LabelEncoder()
+        housing_cat = housing["ocean_proximity"]
+        housing_cat_encoded = encoder.fit_transform(housing_cat)
+        print(encoder.classes_)
+
+
