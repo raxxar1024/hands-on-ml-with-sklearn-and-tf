@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
 from pandas.plotting import scatter_matrix
-from sklearn.preprocessing import Imputer, LabelEncoder
+from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -104,6 +104,10 @@ if __name__ == "__main__":
         encoder = LabelEncoder()
         housing_cat = housing["ocean_proximity"]
         housing_cat_encoded = encoder.fit_transform(housing_cat)
+        print(housing_cat_encoded)
         print(encoder.classes_)
 
-
+        encoder = OneHotEncoder()
+        housing_cat_1hot = encoder.fit_transform(housing_cat_encoded.reshape(-1, 1))
+        print(housing_cat_1hot)
+        print(housing_cat_1hot.toarray())
