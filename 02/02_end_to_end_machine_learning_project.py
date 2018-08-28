@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
 from pandas.plotting import scatter_matrix
 from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
+from sklearn.base import BaseEstimator, TransformerMixin
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -28,6 +29,28 @@ def fetch_housing_data(housing_url=HOUSING_URL, housing_path=HOUSING_PATH):
 def load_housing_data(housing_path=HOUSING_PATH):
     csv_path = os.path.join(housing_path, "housing.csv")
     return pd.read_csv(csv_path)
+
+
+# 自定义转换器
+
+room_ix, bedroom_ix, population_ix, household_ix = 3, 4, 5, 6
+
+
+class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
+    def __init__(self, add_bedrooms_per_room=True):
+        self.add_bedrooms_per_room = add_bedrooms_per_room
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        rooms_per_household = X[:, room_ix] / X[:, household_ix]
+        population_per_household = X[:, population_ix] / X[:, room_ix]
+        if self.add_bedrooms_per_room:
+            bedrooms_per_room = X[:, bedroom_ix] / X[:, room_ix]
+            return np.c_[X, rooms_per_household, population_per_household, bedrooms_per_room]
+        else:
+            return np.c_[X, rooms_per_household, population_per_household]
 
 
 if __name__ == "__main__":
@@ -101,13 +124,17 @@ if __name__ == "__main__":
         # housing_tr = pd.DataFrame(X, columns=housing_num.columns) # 转成Pandas DataFrame
 
         # 处理文本和类别属性
-        encoder = LabelEncoder()
-        housing_cat = housing["ocean_proximity"]
-        housing_cat_encoded = encoder.fit_transform(housing_cat)
-        print(housing_cat_encoded)
-        print(encoder.classes_)
+        # encoder = LabelEncoder()
+        # housing_cat = housing["ocean_proximity"]
+        # housing_cat_encoded = encoder.fit_transform(housing_cat)
+        # print(housing_cat_encoded)
+        # print(encoder.classes_)
+        #
+        # encoder = OneHotEncoder()
+        # housing_cat_1hot = encoder.fit_transform(housing_cat_encoded.reshape(-1, 1))
+        # print(housing_cat_1hot)
+        # print(housing_cat_1hot.toarray())
 
-        encoder = OneHotEncoder()
-        housing_cat_1hot = encoder.fit_transform(housing_cat_encoded.reshape(-1, 1))
-        print(housing_cat_1hot)
-        print(housing_cat_1hot.toarray())
+        # 自定义转换器
+        attr_adder = CombinedAttributesAdder(add_bedrooms_per_room=False)
+        housing_extra_attribs = attr_adder.transform(housing.values)
