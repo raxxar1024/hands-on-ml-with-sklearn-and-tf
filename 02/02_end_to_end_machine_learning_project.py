@@ -12,6 +12,7 @@ from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.preprocessing import StandardScaler
+from custom_encoder import CategoricalEncoder
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -149,8 +150,8 @@ if __name__ == "__main__":
         # print(housing_cat_1hot.toarray())
 
         # 自定义转换器
-        attr_adder = CombinedAttributesAdder(add_bedrooms_per_room=False)
-        housing_extra_attribs = attr_adder.transform(housing.values)
+        # attr_adder = CombinedAttributesAdder(add_bedrooms_per_room=False)
+        # housing_extra_attribs = attr_adder.transform(housing.values)
 
         # 转换流水线
         num_attribs = list(housing_num)
@@ -163,7 +164,7 @@ if __name__ == "__main__":
         ])
         cat_pipeline = Pipeline([
             ("selector", DataFrameSelector(cat_attribs)),
-            ("cat_encoder", CategoricalEncoder(encoder="onehot-dense"))
+            ("cat_encoder", CategoricalEncoder(encoding="onehot-dense"))
         ])
         full_pipeline = FeatureUnion(transformer_list=[
             ("num_pipeline", num_pipeline),
