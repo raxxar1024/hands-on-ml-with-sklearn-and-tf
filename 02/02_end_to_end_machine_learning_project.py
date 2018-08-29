@@ -10,6 +10,8 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from pandas.plotting import scatter_matrix
 from sklearn.preprocessing import Imputer, LabelEncoder, OneHotEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.preprocessing import StandardScaler
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -51,6 +53,17 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
             return np.c_[X, rooms_per_household, population_per_household, bedrooms_per_room]
         else:
             return np.c_[X, rooms_per_household, population_per_household]
+
+
+class DataFrameSelector(BaseEstimator, TransformerMixin):
+    def __init__(self, attribute_names):
+        self.attribute_names = attribute_names
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, X):
+        return X[self.attribute_names].values
 
 
 if __name__ == "__main__":
@@ -116,7 +129,7 @@ if __name__ == "__main__":
 
         # 数据清洗
         # imputer = Imputer(strategy="median")
-        # housing_num = housing.drop("ocean_proximity", axis=1)
+        housing_num = housing.drop("ocean_proximity", axis=1)
         # imputer.fit(housing_num)
         # print(imputer.statistics_)
         # print(housing_num.median().values)
@@ -138,3 +151,22 @@ if __name__ == "__main__":
         # 自定义转换器
         attr_adder = CombinedAttributesAdder(add_bedrooms_per_room=False)
         housing_extra_attribs = attr_adder.transform(housing.values)
+
+        # 转换流水线
+        num_attribs = list(housing_num)
+        cat_attribs = ["ocean_proximity"]
+        num_pipeline = Pipeline([
+            ("selector", DataFrameSelector(num_attribs)),
+            ("imputer", Imputer(strategy="median")),
+            ("attribs_adder", CombinedAttributesAdder()),
+            ("std_scaler", StandardScaler),
+        ])
+        cat_pipeline = Pipeline([
+            ("selector", DataFrameSelector(cat_attribs)),
+            ("cat_encoder", CategoricalEncoder(encoder="onehot-dense"))
+        ])
+        full_pipeline = FeatureUnion(transformer_list=[
+            ("num_pipeline", num_pipeline),
+            ("cat_pipeline", cat_pipeline),
+        ])
+        house_prepared = full_pipeline.fit_transform(housing)
