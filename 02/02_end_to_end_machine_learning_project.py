@@ -90,7 +90,7 @@ if __name__ == "__main__":
         # for set in (strat_train_set, strat_test_set):
         #     set.drop(["income_cat"], axis=1, inplace=True)
         #
-        # housing = strat_train_set.copy()
+        housing = strat_train_set.copy()
 
         # housing.plot(kind="scatter", x="longitude", y="latitude")
         # housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.1)
@@ -125,12 +125,12 @@ if __name__ == "__main__":
         # print(corr_matrix["median_house_value"].sort_values(ascending=False))
 
         # 为机器学习算法准备数据
-        housing = strat_train_set.drop("median_house_value", axis=1)
-        housing_labels = strat_train_set["median_house_value"].copy()
+        # housing = strat_train_set.drop("median_house_value", axis=1)
+        # housing_labels = strat_train_set["median_house_value"].copy()
 
         # 数据清洗
         # imputer = Imputer(strategy="median")
-        housing_num = housing.drop("ocean_proximity", axis=1)
+        # housing_num = housing.drop("ocean_proximity", axis=1)
         # imputer.fit(housing_num)
         # print(imputer.statistics_)
         # print(housing_num.median().values)
@@ -153,21 +153,29 @@ if __name__ == "__main__":
         # attr_adder = CombinedAttributesAdder(add_bedrooms_per_room=False)
         # housing_extra_attribs = attr_adder.transform(housing.values)
 
-        # 转换流水线
-        num_attribs = list(housing_num)
-        cat_attribs = ["ocean_proximity"]
-        num_pipeline = Pipeline([
-            ("selector", DataFrameSelector(num_attribs)),
-            ("imputer", Imputer(strategy="median")),
-            ("attribs_adder", CombinedAttributesAdder()),
-            ("std_scaler", StandardScaler),
-        ])
-        cat_pipeline = Pipeline([
-            ("selector", DataFrameSelector(cat_attribs)),
-            ("cat_encoder", CategoricalEncoder(encoding="onehot-dense"))
-        ])
-        full_pipeline = FeatureUnion(transformer_list=[
-            ("num_pipeline", num_pipeline),
-            ("cat_pipeline", cat_pipeline),
-        ])
-        house_prepared = full_pipeline.fit_transform(housing)
+        # 转换流水线1
+        # num_pipeline = Pipeline([
+        #     ("imputer", Imputer(strategy="median")),
+        #     ("attribs_adder", CombinedAttributesAdder()),
+        #     ("std_scaler", StandardScaler),
+        # ])
+        # housing_num_tr = num_pipeline.fit_transform(housing_num)
+
+        # 转换流水线2
+        # num_attribs = list(housing_num)
+        # cat_attribs = ["ocean_proximity"]
+        # num_pipeline = Pipeline([
+        #     ("selector", DataFrameSelector(num_attribs)),
+        #     ("imputer", Imputer(strategy="median")),
+        #     ("attribs_adder", CombinedAttributesAdder()),
+        #     ("std_scaler", StandardScaler),
+        # ])
+        # cat_pipeline = Pipeline([
+        #     ("selector", DataFrameSelector(cat_attribs)),
+        #     ("cat_encoder", CategoricalEncoder(encoding="onehot-dense"))
+        # ])
+        # full_pipeline = FeatureUnion(transformer_list=[
+        #     ("num_pipeline", num_pipeline),
+        #     ("cat_pipeline", cat_pipeline),
+        # ])
+        # house_prepared = full_pipeline.fit_transform(housing)
