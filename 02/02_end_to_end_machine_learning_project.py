@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
         # 数据清洗
         # imputer = Imputer(strategy="median")
-        # housing_num = housing.drop("ocean_proximity", axis=1)
+        housing_num = housing.drop("ocean_proximity", axis=1)
         # imputer.fit(housing_num)
         # print(imputer.statistics_)
         # print(housing_num.median().values)
@@ -157,25 +157,28 @@ if __name__ == "__main__":
         # num_pipeline = Pipeline([
         #     ("imputer", Imputer(strategy="median")),
         #     ("attribs_adder", CombinedAttributesAdder()),
-        #     ("std_scaler", StandardScaler),
+        #     ("std_scaler", StandardScaler()),
         # ])
         # housing_num_tr = num_pipeline.fit_transform(housing_num)
+        # print(housing_num_tr)
 
         # 转换流水线2
-        # num_attribs = list(housing_num)
-        # cat_attribs = ["ocean_proximity"]
-        # num_pipeline = Pipeline([
-        #     ("selector", DataFrameSelector(num_attribs)),
-        #     ("imputer", Imputer(strategy="median")),
-        #     ("attribs_adder", CombinedAttributesAdder()),
-        #     ("std_scaler", StandardScaler),
-        # ])
-        # cat_pipeline = Pipeline([
-        #     ("selector", DataFrameSelector(cat_attribs)),
-        #     ("cat_encoder", CategoricalEncoder(encoding="onehot-dense"))
-        # ])
-        # full_pipeline = FeatureUnion(transformer_list=[
-        #     ("num_pipeline", num_pipeline),
-        #     ("cat_pipeline", cat_pipeline),
-        # ])
-        # house_prepared = full_pipeline.fit_transform(housing)
+        num_attribs = list(housing_num)
+        cat_attribs = ["ocean_proximity"]
+        num_pipeline = Pipeline([
+            ("selector", DataFrameSelector(num_attribs)),
+            ("imputer", Imputer(strategy="median")),
+            ("attribs_adder", CombinedAttributesAdder()),
+            ("std_scaler", StandardScaler()),
+        ])
+        cat_pipeline = Pipeline([
+            ("selector", DataFrameSelector(cat_attribs)),
+            ("cat_encoder", CategoricalEncoder(encoding="onehot-dense"))
+        ])
+        full_pipeline = FeatureUnion(transformer_list=[
+            ("num_pipeline", num_pipeline),
+            ("cat_pipeline", cat_pipeline),
+        ])
+        house_prepared = full_pipeline.fit_transform(housing)
+        # print(house_prepared)
+        print(house_prepared.shape)
