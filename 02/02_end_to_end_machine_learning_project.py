@@ -90,7 +90,7 @@ if __name__ == "__main__":
         # for set in (strat_train_set, strat_test_set):
         #     set.drop(["income_cat"], axis=1, inplace=True)
         #
-        housing = strat_train_set.copy()
+        # housing = strat_train_set.copy()
 
         # housing.plot(kind="scatter", x="longitude", y="latitude")
         # housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.1)
@@ -125,8 +125,8 @@ if __name__ == "__main__":
         # print(corr_matrix["median_house_value"].sort_values(ascending=False))
 
         # 为机器学习算法准备数据
-        # housing = strat_train_set.drop("median_house_value", axis=1)
-        # housing_labels = strat_train_set["median_house_value"].copy()
+        housing = strat_train_set.drop("median_house_value", axis=1)
+        housing_labels = strat_train_set["median_house_value"].copy()
 
         # 数据清洗
         # imputer = Imputer(strategy="median")
@@ -179,6 +179,37 @@ if __name__ == "__main__":
             ("num_pipeline", num_pipeline),
             ("cat_pipeline", cat_pipeline),
         ])
-        house_prepared = full_pipeline.fit_transform(housing)
+        housing_prepared = full_pipeline.fit_transform(housing)
         # print(house_prepared)
-        print(house_prepared.shape)
+        # print(house_prepared.shape)
+
+        # 在训练集上训练和评估
+        # 线性回归
+        from sklearn.linear_model import LinearRegression
+
+        lin_reg = LinearRegression()
+        lin_reg.fit(housing_prepared, housing_labels)
+
+        some_data = housing.iloc[:5]
+        some_labels = housing_labels.iloc[:5]
+        some_data_prepared = full_pipeline.transform(some_data)
+        print("Predictions:\n", lin_reg.predict(housing_prepared))
+        print("Labels:\n", list(some_labels))
+
+        from sklearn.metrics import mean_squared_error
+
+        housing_predictions = lin_reg.predict(housing_prepared)
+        lin_mse = mean_squared_error(housing_labels, housing_predictions)
+        lin_rmse = np.sqrt(lin_mse)
+        print(lin_rmse)
+
+        # 决策树回归
+        from sklearn.tree import DecisionTreeRegressor
+
+        tree_reg = DecisionTreeRegressor()
+        tree_reg.fit(housing_prepared, housing_labels)
+
+        housing_predictions = tree_reg.predict(housing_prepared)
+        tree_mse = mean_squared_error(housing_labels, housing_predictions)
+        tree_rmse = np.sqrt(tree_mse)
+        print(tree_rmse)
