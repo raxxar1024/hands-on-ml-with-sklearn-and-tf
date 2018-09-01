@@ -13,6 +13,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.preprocessing import StandardScaler
 from custom_encoder import CategoricalEncoder
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LinearRegression
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -65,6 +67,12 @@ class DataFrameSelector(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         return X[self.attribute_names].values
+
+
+def display_scores(scores):
+    print("Scores:", scores)
+    print("Mean:", scores.mean())
+    print("Standard deviation:", scores.std())
 
 
 if __name__ == "__main__":
@@ -213,3 +221,30 @@ if __name__ == "__main__":
         tree_mse = mean_squared_error(housing_labels, housing_predictions)
         tree_rmse = np.sqrt(tree_mse)
         print(tree_rmse)
+
+        # 使用交叉验证做评估
+        # 决策树
+        # scores = cross_val_score(tree_reg, housing_prepared, housing_labels,
+        #                          scoring="neg_mean_squared_error", cv=10)
+        # tree_rmse_scores = np.sqrt(-scores)
+        # display_scores(tree_rmse_scores)
+
+        # 线性回归
+        # lin_scores = cross_val_score(lin_reg, housing_prepared, housing_labels,
+        #                              scoring="neg_mean_squared_error", cv=10)
+        # lin_rmse_scores = np.sqrt(-lin_scores)
+        # display_scores(lin_rmse_scores)
+
+        # 随机森林
+        from sklearn.ensemble import RandomForestRegressor
+
+        forest_reg = RandomForestRegressor(random_state=42)
+        forest_reg.fit(housing_prepared, housing_labels)
+        housing_predictions = forest_reg.predict(housing_prepared)
+        forest_mse = mean_squared_error(housing_labels, housing_predictions)
+        forest_rmse = np.sqrt(forest_mse)
+        print(forest_rmse)
+        forest_scores = cross_val_score(forest_reg, housing_prepared, housing_labels,
+                                        scoring="neg_mean_squared_error", cv=10)
+        forest_rmse_scores = np.sqrt(-forest_scores)
+        display_scores(forest_rmse_scores)
