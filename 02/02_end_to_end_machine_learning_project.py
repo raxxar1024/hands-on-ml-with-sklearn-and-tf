@@ -15,6 +15,8 @@ from sklearn.preprocessing import StandardScaler
 from custom_encoder import CategoricalEncoder
 from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -146,11 +148,11 @@ if __name__ == "__main__":
         # housing_tr = pd.DataFrame(X, columns=housing_num.columns) # 转成Pandas DataFrame
 
         # 处理文本和类别属性
-        # encoder = LabelEncoder()
-        # housing_cat = housing["ocean_proximity"]
-        # housing_cat_encoded = encoder.fit_transform(housing_cat)
-        # print(housing_cat_encoded)
-        # print(encoder.classes_)
+        encoder = LabelEncoder()
+        housing_cat = housing["ocean_proximity"]
+        housing_cat_encoded = encoder.fit_transform(housing_cat)
+        print(housing_cat_encoded)
+        print(encoder.classes_)
         #
         # encoder = OneHotEncoder()
         # housing_cat_1hot = encoder.fit_transform(housing_cat_encoded.reshape(-1, 1))
@@ -236,15 +238,38 @@ if __name__ == "__main__":
         # display_scores(lin_rmse_scores)
 
         # 随机森林
-        from sklearn.ensemble import RandomForestRegressor
+        # forest_reg = RandomForestRegressor(random_state=42)
+        # forest_reg.fit(housing_prepared, housing_labels)
+        # housing_predictions = forest_reg.predict(housing_prepared)
+        # forest_mse = mean_squared_error(housing_labels, housing_predictions)
+        # forest_rmse = np.sqrt(forest_mse)
+        # print(forest_rmse)
+        # forest_scores = cross_val_score(forest_reg, housing_prepared, housing_labels,
+        #                                 scoring="neg_mean_squared_error", cv=10)
+        # forest_rmse_scores = np.sqrt(-forest_scores)
+        # display_scores(forest_rmse_scores)
 
+        # 模型微调
+        param_grid = [
+            {"n_estimators": [3, 10, 30], "max_features": [2, 4, 6, 8]},
+            {"bootstrap": [False], "n_estimators": [3, 10], "max_features": [2, 3, 4]},
+        ]
         forest_reg = RandomForestRegressor(random_state=42)
-        forest_reg.fit(housing_prepared, housing_labels)
-        housing_predictions = forest_reg.predict(housing_prepared)
-        forest_mse = mean_squared_error(housing_labels, housing_predictions)
-        forest_rmse = np.sqrt(forest_mse)
-        print(forest_rmse)
-        forest_scores = cross_val_score(forest_reg, housing_prepared, housing_labels,
-                                        scoring="neg_mean_squared_error", cv=10)
-        forest_rmse_scores = np.sqrt(-forest_scores)
-        display_scores(forest_rmse_scores)
+        grid_search = GridSearchCV(forest_reg, param_grid, cv=5,
+                                   scoring="neg_mean_squared_error", return_train_score=True)
+        grid_search.fit(housing_prepared, housing_labels)
+
+        print(grid_search.best_params_)
+        print(grid_search.best_estimator_)
+        cvres = grid_search.cv_results_
+        for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
+            print(np.sqrt(-mean_score), params)
+
+        # 分析最佳模型和它们的误差
+        feature_importance = grid_search.best_estimator_.feature_importances_
+        print(feature_importance)
+
+        extra_attribs = ["rooms_per_hhold", "pop_per_hhold", "bedrooms_per_room"]
+        cat_one_hot_attribs = list(encoder.classes_)
+        attributes = num_attribs + extra_attribs + cat_one_hot_attribs
+        print(sorted(zip(feature_importance, attributes), reverse=True))
