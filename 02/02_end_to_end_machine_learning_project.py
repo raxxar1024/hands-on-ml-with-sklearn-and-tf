@@ -17,6 +17,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
+import hashlib
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -77,6 +78,16 @@ def display_scores(scores):
     print("Standard deviation:", scores.std())
 
 
+def test_set_check(identifier, test_ratio, hash):
+    return hash(np.int64(identifier)).digest()[-1] < 256 * test_ratio
+
+
+def split_train_test_by_id(data, test_ratio, id_column, hash=hashlib.md5):
+    ids = data[id_column]
+    in_test_set = ids.apply(lambda id_: test_set_check(id_, test_ratio, hash))
+    return data.loc[-in_test_set], data.loc[in_test_set]
+
+
 if __name__ == "__main__":
     # fetch_housing_data()
 
@@ -87,6 +98,9 @@ if __name__ == "__main__":
     # print(housing.describe())
     # housing.hist(bins=50, figsize=(20, 15))
     # plt.show()
+
+    # housing_with_id = housing.reset_index()
+    # train_set, test_set = split_train_test_by_id(housing_with_id, 0.2, "index")
 
     train_set, test_set = train_test_split(housing, test_size=0.2, random_state=42)
     housing["income_cat"] = np.ceil(housing["median_income"] / 1.5)
